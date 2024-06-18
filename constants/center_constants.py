@@ -18,7 +18,7 @@ class Constants:
     }
     url = 'https://channeldock.com/portal/api/v2/center'
     # GET Requests
-    HOME_URL = url
+    HOME_URL = 'https://channeldock.com/portal/api/v2'
     PRODUCTS_URL = f'{url}/inventory'  # used for getting and creating products
     ORDERS_URL = f'{url}/orders'  # used for getting and creating orders
     SHIPMENTS_URL = f'{url}/shipment'  # used for getting, creating and updating shipments
@@ -26,7 +26,7 @@ class Constants:
     SELLERS_URL = f'{url}/sellers'
     ADMINISTRATION_URL = f'{url}/administration'
     INBOUNDS_URL = f'{url}/inbounds'  # used for getting, creating, updating and deleting inbounds
-    RETURNS_URL = f'{url}/returns'  # used for getting, and handeling returns
+    RETURNS_URL = f'{url}/returns'  # used for getting, and handling returns
 
     # POST REQUESTS
     PRODUCTS_STOCK_UPDATE_URL = f'{url}/stockupdateall'
