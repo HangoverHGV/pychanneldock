@@ -32,5 +32,5 @@ class Constants:
     PRODUCTS_STOCK_UPDATE_URL = f'{url}/stockupdateall'
 
     CREATE_STOCK_LOCATION_URL = f'{url}/stocklocation'  # used for creating, updating and deleting stock locations
-    STOCK_INBOUND_ITEMS = f'{url}/inbounds/stock'
+    STOCK_INBOUND_ITEM_URL = f'{url}/inbounds/stock'
 
