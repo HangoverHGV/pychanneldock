@@ -236,10 +236,9 @@ class ChannelDockAPI:
             url = f'{url}&{key}={value}'
         return requests.get(url, headers=self.headers)
 
-    def get_all_shipments(self, labels_dir=None, **kwargs):
+    def get_all_shipments(self, **kwargs):
         """
         Get all shipments from ChannelDock API
-        :param labels_dir: If not None, the labels will be saved in this directory
         :param kwargs: id, seller_id, status, order_id, sort_attr, sort_dir, start_date, end_date, include_pdf_label
         id: the shipment id in the system
         seller_id: the seller id
