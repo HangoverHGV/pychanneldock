@@ -8,4 +8,4 @@ setup(
         'requests',
     ],
     descrtiption='A Python wrapper for the Channeldock API',
-    author='HangoverHGV')
+    author='Hango Bogdan')
