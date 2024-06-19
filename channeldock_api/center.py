@@ -1,5 +1,7 @@
 from constants.center_constants import Constants
 import requests
+import os
+import base64
 import json
 
 
@@ -234,9 +236,10 @@ class ChannelDockAPI:
             url = f'{url}&{key}={value}'
         return requests.get(url, headers=self.headers)
 
-    def get_all_shipments(self, **kwargs):
+    def get_all_shipments(self, labels_dir=None, **kwargs):
         """
         Get all shipments from ChannelDock API
+        :param labels_dir: If not None, the labels will be saved in this directory
         :param kwargs: id, seller_id, status, order_id, sort_attr, sort_dir, start_date, end_date, include_pdf_label
         id: the shipment id in the system
         seller_id: the seller id
@@ -264,6 +267,25 @@ class ChannelDockAPI:
             else:
                 break
         return shipments
+
+    @staticmethod
+    def create_labels(dir_path, shipments):
+        """
+        Create labels from shipments
+        :param dir_path: Path to save the labels
+        :param shipments: Shipments to create labels
+        :return:
+        """
+        directories = os.path.abspath(dir_path)
+        if not os.path.exists(directories):
+            os.makedirs(directories)
+        labels = []
+        for shipment in shipments:
+            file_name = f'{directories}/label_{shipment["id"]}.pdf'
+            encoded_pdf = base64.b64decode(shipment["base64_label_pdf"])
+            labels.append(encoded_pdf)
+            with open(file_name, 'wb') as f:
+                f.write(encoded_pdf)
 
     def update_shipment(self, data):
         """
