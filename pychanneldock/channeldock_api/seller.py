@@ -1,7 +1,5 @@
-from constants.center_constants import Constants
+from pychanneldock.constants.seller_constants import Constants
 import requests
-import os
-import base64
 import json
 
 
@@ -36,18 +34,15 @@ class ChannelDockAPI:
         """
         Get products from ChannelDock API
         :param page: page number - mandatory
-        :param kwargs: id, seller_id, center_id, ean, sku, product_reference, location, sort_attr, sort_dir, include_stock_location_data
+        :param kwargs: id, ean, sku, tittle, supplier_id, sort_attr, sort_dir, include_stock_location_data
         id: the product id
-        seller_id: the seller id
-        center_product_status: the center product status
         ean: the product ean
         sku: the product sku
-        product_reference: the product reference
-        location: free input - location of the product
+        title: the product title
+        supplier_id: the supplier id
         sort_attr: the attribute to sort by (updated_at, id)
         sort_dir: the direction to sort by (ASC, DESC)
         include_stock_location_data: include stock location data (true or false)
-
         :return: The response from the GET request.
         """
 
@@ -58,7 +53,7 @@ class ChannelDockAPI:
 
     def get_all_products(self, **kwargs):
         """
-        Get all products from ChannelDock API
+        Get products from ChannelDock API
         :param kwargs: id, ean, sku, tittle, supplier_id, sort_attr, sort_dir, include_stock_location_data
         id: the product id
         ean: the product ean
@@ -68,7 +63,7 @@ class ChannelDockAPI:
         sort_attr: the attribute to sort by (updated_at, id)
         sort_dir: the direction to sort by (ASC, DESC)
         include_stock_location_data: include stock location data (true or false)
-        :return: List of all products
+        :return: The response from the GET request.
         """
         page = 0
         products = []
@@ -95,17 +90,17 @@ class ChannelDockAPI:
 
         url = Constants.PRODUCTS_URL
         data = json.dumps(data, indent=4)
-        return requests.post(url, headers=self.headers, data=data)
+        return requests.put(url, headers=self.headers, data=data)
 
-    def update_stock_amount_bulk(self, data):
+    def create_product(self, data):
         """
         For more details on the data format, check the official documentation
-        Post product to ChannelDock API
+        Create product to ChannelDock API
         :param data: product data
         :return: The response from the POST request.
         """
 
-        url = Constants.PRODUCTS_STOCK_UPDATE_URL
+        url = Constants.PRODUCTS_URL
         data = json.dumps(data, indent=4)
         return requests.post(url, headers=self.headers, data=data)
 
@@ -113,16 +108,14 @@ class ChannelDockAPI:
         """
         Get orders from ChannelDock API
         :param page: page number - mandatory
-        :param kwargs: id, seller_id, order_status, order_id, shipping_country_code, sort_attr, sort_dir, start_date,
+        :param kwargs: id, order_status, order_id, shipping_country_code, sort_attr, sort_dir, start_date,
                         end_date, include_raw_order_data
         id: the order id in the system
-        seller_id: the seller id
-        order_status: the order status
+        order_status: the order status (default: order, shipment, cancelled, return)
         order_id: the order id
         shipping_country_code: the shipping country code
-        sort_attr: the attribute to sort by (updated_at, default: order_date, sync_date, updated_at)
-        sort_dir: the direction to sort by (ASC, DESC)
-        shipping_address_accurate: the shipping address accurate (default:1, 0, 'ALL')
+        sort_attr: the attribute to sort by (default: order_date, id, sync_date, updated_at)
+        sort_dir: the direction to sort by (default: ASC, DESC)
         start_date: the start date
         end_date: the end date
         include_raw_order_data: include raw order data (true or false)
@@ -137,16 +130,16 @@ class ChannelDockAPI:
     def get_all_orders(self, **kwargs):
         """
         Get all orders from ChannelDock API
-        :param kwargs: order_status, order_id, shipping_country_code, sort_attr, sort_dir, start_date, end_date, id,
-                        include_raw_order_data
-        order_status: the order status
+        :param kwargs: id, order_status, order_id, shipping_country_code, sort_attr, sort_dir, start_date,
+                        end_date, include_raw_order_data
+        id: the order id in the system
+        order_status: the order status (default: order, shipment, cancelled, return)
         order_id: the order id
         shipping_country_code: the shipping country code
-        sort_attr: the attribute to sort by (updated_at, default: order_date, sync_date, updated_at)
-        sort_dir: the direction to sort by (ASC, DESC)
+        sort_attr: the attribute to sort by (default: order_date, id, sync_date, updated_at)
+        sort_dir: the direction to sort by (default: ASC, DESC)
         start_date: the start date
         end_date: the end date
-        id: the order id
         include_raw_order_data: include raw order data (true or false)
         :return: List of all orders
         """
@@ -177,6 +170,87 @@ class ChannelDockAPI:
         url = Constants.ORDERS_URL
         data = json.dumps(data, indent=4)
         return requests.post(url, headers=self.headers, data=data)
+
+    def update_order(self, data):
+        """
+        For more details on the data format, check the official documentation
+        Update order to ChannelDock API
+        :param data: order data
+        :return: The response from the PUT request.
+        """
+
+        url = Constants.ORDERS_URL
+        data = json.dumps(data, indent=4)
+        return requests.put(url, headers=self.headers, data=data)
+
+    def get_shipments(self, page=1, **kwargs):
+        """
+        Get shipments from ChannelDock API
+        :param page: page number - mandatory
+        :param kwargs: id, status, order_id, sort_attr, sort_dir, start_date, end_date
+        id: the shipment id in the system
+        status: the shipment status (registered, distribution, delivered, return)
+        order_id: the order id
+        sort_attr: the attribute to sort by (id, default: created_at, order_id)
+        sort_dir: the direction to sort by (ASC, DESC)
+        start_date: the start date
+        end_date: the end date
+        :return: The response from the GET request.
+        """
+
+        url = f'{Constants.SHIPMENTS_URL}?page={page}'
+        for key, value in kwargs.items():
+            url = f'{url}&{key}={value}'
+        return requests.get(url, headers=self.headers)
+
+    def get_all_shipments(self, **kwargs):
+        """
+        Get all shipments from ChannelDock API
+        :param kwargs: id, status, order_id, sort_attr, sort_dir, start_date, end_date
+        id: the shipment id in the system
+        status: the shipment status (registered, distribution, delivered, return)
+        order_id: the order id
+        sort_attr: the attribute to sort by (id, default: created_at, order_id)
+        sort_dir: the direction to sort by (ASC, DESC)
+        start_date: the start date
+        end_date: the end date
+        :return: List of all shipments
+        """
+
+        page = 0
+        shipments = []
+        while True:
+            page += 1
+            response = self.get_shipments(page, **kwargs)
+            if response.status_code == 200:
+                response = response.json()
+                if len(response['shipments']) > 0 and response['response'] == 'success':
+                    shipments.extend(response['shipments'])
+                else:
+                    break
+            else:
+                break
+        return shipments
+
+    def create_shipment(self, data):
+        """
+        For more details on the data format, check the official documentation
+        Post shipment to ChannelDock API
+        :param data: shipment data
+        :return: The response from the POST request.
+        """
+
+        url = Constants.SHIPMENTS_URL
+        data = json.dumps(data, indent=4)
+        return requests.post(url, headers=self.headers, data=data)
+
+    def list_carriers(self):
+        """
+        Get carriers from ChannelDock API
+        :return: The response from the GET request.
+        """
+
+        return requests.get(Constants.CARRIERS_URL, headers=self.headers)
 
     def create_stock_location(self, data):
         """
@@ -214,294 +288,142 @@ class ChannelDockAPI:
         data = json.dumps(data, indent=4)
         return requests.delete(url, headers=self.headers, data=data)
 
-    def get_shipments(self, page=1, **kwargs):
+    def get_deliveries(self, page=1, **kwargs):
         """
-        Get shipments from ChannelDock API
+        Get deliveries from ChannelDock API
         :param page: page number - mandatory
-        :param kwargs: id, seller_id, status, order_id, sort_attr, sort_dir, start_date, end_date, include_pdf_label
-        id: the shipment id in the system
-        seller_id: the seller id
-        status: the shipment status (registered, distribution, delivered, return)
-        order_id: the order id
-        sort_attr: the attribute to sort by (updated_at, default: created_at, updated_at)
+        :param kwargs: id, status, supplier_id, sort_attr, sort_dir, delivery_type, ref, status, delivery_date
+        id: the delivery id in the system
+        status: the delivery status
+        supplier_id: the order id
+        sort_attr: the attribute to sort by (id, default: created_at, order_id)
         sort_dir: the direction to sort by (ASC, DESC)
-        start_date: the start date
-        end_date: the end date
-        include_pdf_label: include pdf label (true or false)
+        delivery_type: the delivery type (inbound, outbound, bol_outbound, amazaon_outbound)
+        ref: the delivery reference
+        status: the delivery status (new, confirmed, delivered, stocked, shipped, cancelled)
+        delivery_date: the delivery date
         :return: The response from the GET request.
         """
 
-        url = f'{Constants.SHIPMENTS_URL}?page={page}'
+        url = f'{Constants.DELIVERIES_URL}?page={page}'
         for key, value in kwargs.items():
             url = f'{url}&{key}={value}'
         return requests.get(url, headers=self.headers)
 
-    def get_all_shipments(self, **kwargs):
-        """
-        Get all shipments from ChannelDock API
-        :param kwargs: id, seller_id, status, order_id, sort_attr, sort_dir, start_date, end_date, include_pdf_label
-        id: the shipment id in the system
-        seller_id: the seller id
-        status: the shipment status (registered, distribution, delivered, return)
-        order_id: the order id
-        sort_attr: the attribute to sort by (updated_at, default: created_at, updated_at)
-        sort_dir: the direction to sort by (ASC, DESC)
-        start_date: the start date
-        end_date: the end date
-        include_pdf_label: include pdf label (true or false)
-        :return: List of all shipments
-        """
-
-        page = 0
-        shipments = []
-        while True:
-            page += 1
-            response = self.get_shipments(page, **kwargs)
-            if response.status_code == 200:
-                response = response.json()
-                if len(response['shipments']) > 0 and response['response'] == 'success':
-                    shipments.extend(response['shipments'])
-                else:
-                    break
-            else:
-                break
-        return shipments
-
-    @staticmethod
-    def create_labels(dir_path, shipments):
-        """
-        Create labels from shipments
-        :param dir_path: Path to save the labels
-        :param shipments: Shipments to create labels
-        :return:
-        """
-        directories = os.path.abspath(dir_path)
-        if not os.path.exists(directories):
-            os.makedirs(directories)
-        labels = []
-        for shipment in shipments:
-            file_name = f'{directories}/label_{shipment["id"]}.pdf'
-            encoded_pdf = base64.b64decode(shipment["base64_label_pdf"])
-            labels.append(encoded_pdf)
-            with open(file_name, 'wb') as f:
-                f.write(encoded_pdf)
-
-    def update_shipment(self, data):
+    def create_delivery(self, data):
         """
         For more details on the data format, check the official documentation
-        Update shipment to ChannelDock API
-        :param data: shipment data
-        :return: The response from the PUT request.
-        """
-
-        url = Constants.SHIPMENTS_URL
-        data = json.dumps(data, indent=4)
-        return requests.put(url, headers=self.headers, data=data)
-
-    def create_shipment(self, data):
-        """
-        For more details on the data format, check the official documentation
-        Post shipment to ChannelDock API
-        :param data: shipment data
+        Post delivery to ChannelDock API
+        :param data: delivery data
         :return: The response from the POST request.
         """
 
-        url = Constants.SHIPMENTS_URL
+        url = Constants.DELIVERIES_URL
         data = json.dumps(data, indent=4)
         return requests.post(url, headers=self.headers, data=data)
 
-    def list_carriers(self):
-        """
-        Get carriers from ChannelDock API
-        :return: The response from the GET request.
-        """
-
-        return requests.get(Constants.CARRIERS_URL, headers=self.headers)
-
-    def get_sellers(self, page=1, **kwargs):
-        """
-        Get sellers from ChannelDock API
-        :param page: page number - mandatory
-        :param kwargs: seller_id, sort_attr, sort_dir
-        seller_id: the seller id
-        sort_attr: the attribute to sort by
-        sort_dir: the direction to sort by (ASC, DESC)
-        :return: The response from the GET request.
-        """
-
-        url = f'{Constants.SELLERS_URL}?page={page}'
-        return requests.get(url, headers=self.headers)
-
-    def get_all_sellers(self, **kwargs):
-        """
-        Get all sellers from ChannelDock API
-        :param kwargs: seller_id, sort_attr, sort_dir
-        seller_id: the seller id
-        sort_attr: the attribute to sort by
-        sort_dir: the direction to sort by (ASC, DESC)
-        :return: List of all sellers
-        """
-
-        page = 0
-        sellers = []
-        while True:
-            page += 1
-            response = self.get_sellers(page, **kwargs)
-            if response.status_code == 200:
-                response = response.json()
-                if len(response['sellers']) > 0 and response['response'] == 'success':
-                    sellers.extend(response['sellers'])
-                else:
-                    break
-            else:
-                break
-        return sellers
-
-    def get_administration(self, page=1, **kwargs):
-        """
-        Get administration from ChannelDock API
-        :param page: page number - mandatory
-        :param kwargs: start_date, end_date, seller_id
-        start_date: the start date
-        end_date: the end date
-        seller_id: the seller id
-        :return: The response from the GET request.
-        """
-        url = f'{Constants.ADMINISTRATION_URL}?page={page}'
-        for key, value in kwargs.items():
-            url = f'{url}&{key}={value}'
-        return requests.get(url, headers=self.headers)
-
-    def get_all_administration(self, **kwargs):
-        """
-        Get all administration from ChannelDock API
-        :param kwargs: start_date, end_date, seller_id
-        start_date: the start date
-        end_date: the end date
-        seller_id: the seller id
-        :return: List of all administration
-        """
-        page = 0
-        administration = []
-        while True:
-            page += 1
-            response = self.get_administration(page, **kwargs)
-            if response.status_code == 200:
-                response = response.json()
-                if len(response['sellers']) > 0 and response['sellers'] == 'success':
-                    administration.extend(response['sellers'])
-                else:
-                    break
-            else:
-                break
-        return administration
-
-    def get_inbounds(self, page=1, **kwargs):
-        """
-        Get inbounds from ChannelDock API
-        :param page: page number - mandatory
-        :param kwargs: id, seller_id, status, sort_attr, sort_dir, start_date, end_date
-        id: the inbound id
-        seller_id: the seller id
-        status: the inbound status (new, confirmed, stocked)
-        sort_attr: the attribute to sort by (updated_at, default: created_at, updated_at)
-        sort_dir: the direction to sort by (ASC, DESC)
-        delivery_type: the delivery type (default: outbound, bol_outbound, amazon_outbound)
-        :return: The response from the GET request.
-        """
-        url = f'{Constants.INBOUNDS_URL}?page={page}'
-        for key, value in kwargs.items():
-            url = f'{url}&{key}={value}'
-        return requests.get(url, headers=self.headers)
-
-    def get_all_inbounds(self, **kwargs):
-        """
-        Get all inbounds from ChannelDock API
-        :param kwargs: id, seller_id, status, sort_attr, sort_dir, start_date, end_date
-        id: the inbound id
-        seller_id: the seller id
-        status: the inbound status (new, confirmed, stocked)
-        sort_attr: the attribute to sort by (updated_at, default: created_at, updated_at)
-        sort_dir: the direction to sort by (ASC, DESC)
-        delivery_type: the delivery type (default: outbound, bol_outbound, amazon_outbound)
-        :return: List of all inbounds
-        """
-        page = 0
-        inbounds = []
-        while True:
-            page += 1
-            response = self.get_inbounds(page, **kwargs)
-            if response.status_code == 200:
-                response = response.json()
-                if len(response['inbounds']) > 0 and response['response'] == 'success':
-                    inbounds.extend(response['inbounds'])
-                else:
-                    break
-            else:
-                break
-        return inbounds
-
-    def create_inbound(self, data):
+    def update_delivery(self, data):
         """
         For more details on the data format, check the official documentation
-        Post inbound to ChannelDock API
-        :param data: inbound data
-        :return: The response from the POST request.
-        """
-
-        url = Constants.INBOUNDS_URL
-        data = json.dumps(data, indent=4)
-        return requests.post(url, headers=self.headers, data=data)
-
-    def update_inbound(self, data):
-        """
-        For more details on the data format, check the official documentation
-        Update inbound to ChannelDock API
-        :param data: inbound data
+        Update delivery to ChannelDock API
+        :param data: delivery data
         :return: The response from the PUT request.
         """
 
-        url = Constants.INBOUNDS_URL
+        url = Constants.DELIVERIES_URL
         data = json.dumps(data, indent=4)
         return requests.put(url, headers=self.headers, data=data)
 
-    def delete_inbound(self, data):
+    def delete_delivery(self, data):
         """
         For more details on the data format, check the official documentation
-        Delete inbound to ChannelDock API
-        :param data: inbound data
+        Delete delivery to ChannelDock API
+        :param data: delivery data
         :return: The response from the DELETE request.
         """
 
-        url = Constants.INBOUNDS_URL
+        url = Constants.DELIVERIES_URL
         data = json.dumps(data, indent=4)
         return requests.delete(url, headers=self.headers, data=data)
 
-    def stock_inbound_item(self, data):
+    def get_suppliers(self, page=1, **kwargs):
+        """
+        Get suppliers from ChannelDock API
+        :param page: page number - mandatory
+        :param kwargs: id, company, sort_attr, sort_dir
+        id: the supplier id
+        company: the supplier company name
+        sort_attr: the attribute to sort by
+        sort_dir: the direction to sort by (ASC, DESC)
+        :return: The response from the GET request.
+        """
+
+        url = f'{Constants.SUPPLIERS_URL}?page={page}'
+        for key, value in kwargs.items():
+            url = f'{url}&{key}={value}'
+        return requests.get(url, headers=self.headers)
+
+    def get_all_suppliers(self, **kwargs):
+        """
+        Get all suppliers from ChannelDock API
+        :param kwargs: id, company, sort_attr, sort_dir
+        id: the supplier id
+        company: the supplier company name
+        sort_attr: the attribute to sort by
+        sort_dir: the direction to sort by (ASC, DESC)
+        :return: List of all suppliers
+        """
+        page = 0
+        suppliers = []
+        while True:
+            page += 1
+            response = self.get_suppliers(page, **kwargs)
+            if response.status_code == 200:
+                response = response.json()
+                if len(response['suppliers']) > 0 and response['response'] == 'success':
+                    suppliers.extend(response['suppliers'])
+                else:
+                    break
+            else:
+                break
+        return suppliers
+
+    def create_update_supplier(self, data):
         """
         For more details on the data format, check the official documentation
-        :param data:
+        Post supplier to ChannelDock API
+        :param data: supplier data
         :return: The response from the POST request.
         """
-        url = Constants.STOCK_INBOUND_ITEM_URL
+
+        url = Constants.SUPPLIERS_URL
         data = json.dumps(data, indent=4)
         return requests.post(url, headers=self.headers, data=data)
+
+    def delete_supplier(self, data):
+        """
+        For more details on the data format, check the official documentation
+        Delete supplier to ChannelDock API
+        :param data: supplier data
+        :return: The response from the DELETE request.
+        """
+
+        url = Constants.SUPPLIERS_URL
+        data = json.dumps(data, indent=4)
+        return requests.delete(url, headers=self.headers, data=data)
 
     def get_returns(self, page=1, **kwargs):
         """
         Get returns from ChannelDock API
         :param page: page number - mandatory
-        :param kwargs: id, order_id, sort_attr, sort_dir, remote_order_id, remote_return_id, is_handled,
-                start_handled_date, end_handled_date
+        :param kwargs: id, sort_attr, sort_dir, remote_order_id, remote_return_id, is_handled, order_id
         id: the return id
-        order_id: the order id
         sort_attr: the attribute to sort by (order_id)
         sort_dir: the direction to sort by (ASC, DESC)
         remote_order_id: the remote order id (from r.g. Amazon or bol.com)
         remote_return_id: the remote return id (from r.g. Amazon or bol.com)
         is_handled: the return is handled (1 or 0)
-        start_handled_date: the start handled date
-        end_handled_date: the end handled date
+        order_id: the order id
         :return: The response from the GET request.
         """
         url = f'{Constants.RETURNS_URL}?page={page}'
@@ -512,17 +434,14 @@ class ChannelDockAPI:
     def get_all_returns(self, **kwargs):
         """
         Get all returns from ChannelDock API
-        :param kwargs: id, order_id, sort_attr, sort_dir, remote_order_id, remote_return_id, is_handled,
-                start_handled_date, end_handled_date
+                :param kwargs: id, sort_attr, sort_dir, remote_order_id, remote_return_id, is_handled, order_id
         id: the return id
-        order_id: the order id
         sort_attr: the attribute to sort by (order_id)
         sort_dir: the direction to sort by (ASC, DESC)
         remote_order_id: the remote order id (from r.g. Amazon or bol.com)
         remote_return_id: the remote return id (from r.g. Amazon or bol.com)
         is_handled: the return is handled (1 or 0)
-        start_handled_date: the start handled date
-        end_handled_date: the end handled date
+        order_id: the order id
         :return: List of all returns
         """
         page = 0
