@@ -34,7 +34,7 @@ class ChannelDockAPI:
         """
         Get products from ChannelDock API
         :param page: page number - mandatory
-        :param kwargs: id, ean, sku, tittle, supplier_id, sort_attr, sort_dir, include_stock_location_data
+        :param kwargs: id, seller_id, center_id, ean, sku, product_reference, location, sort_attr, sort_dir, include_stock_location_data
         id: the product id
         seller_id: the seller id
         center_product_status: the center product status
@@ -42,7 +42,6 @@ class ChannelDockAPI:
         sku: the product sku
         product_reference: the product reference
         location: free input - location of the product
-        supplier_id: the supplier id
         sort_attr: the attribute to sort by (updated_at, id)
         sort_dir: the direction to sort by (ASC, DESC)
         include_stock_location_data: include stock location data (true or false)
